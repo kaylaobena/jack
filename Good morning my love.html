@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>good morning my love</title>
+<style>
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#000;--fg:#fff}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:'Courier New',Courier,monospace;overflow:hidden}
+.hearts{position:fixed;inset:0;z-index:0;opacity:.55;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cdefs%3E%3Cpath id='h' d='M12 21s-7-4.6-9.5-9C.7 8.5 2.6 4 6.5 4c2.2 0 4 1.3 5.5 3 1.5-1.7 3.3-3 5.5-3 3.9 0 5.8 4.5 4 8-2.5 4.4-9.5 9-9.5 9z'/%3E%3C/defs%3E%3Cg fill='%23081a4a'%3E%3Cuse href='%23h' transform='translate(20 20) scale(2.2) rotate(-12 12 12)'/%3E%3Cuse href='%23h' transform='translate(135 60) scale(1.4) rotate(15 12 12)'/%3E%3Cuse href='%23h' transform='translate(70 135) scale(1.8) rotate(8 12 12)'/%3E%3Cuse href='%23h' transform='translate(175 165) scale(1) rotate(-20 12 12)'/%3E%3C/g%3E%3C/svg%3E")}
+main{position:relative;z-index:1;height:100%;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
+#t{white-space:pre-wrap;font-size:clamp(18px,3.4vw,30px);line-height:1.6;max-width:900px;width:100%}
+.cur{display:inline-block;width:.6em;height:1.1em;background:#fff;vertical-align:text-bottom;animation:b 1s steps(1) infinite}
+@keyframes b{50%{opacity:0}}
+#f{display:none;margin:0;font-size:clamp(5px,1.55vw,13px);line-height:1.05;white-space:pre;text-align:center;font-weight:bold}
+#f.on{display:block;animation:in 2s ease both}
+@keyframes in{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+<div class="hearts"></div>
+<main><div id="t"><span id="x"></span><span class="cur"></span></div><pre id="f"></pre></main>
+<script>
+const x=document.getElementById('x'),T=document.getElementById('t'),F=document.getElementById('f');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let txt='';
+async function type(s){for(const c of s){txt+=c;x.textContent=txt;await sleep(55+Math.random()*70);}}
+async function wipe(){while(txt.length){txt=txt.slice(0,-1);x.textContent=txt;await sleep(22);}}
+function now(){return new Date().toLocaleString('en-US',{weekday:'long',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'});}
+
+/* ASCII bouquet */
+const W=84,H=36,COL={b:'#8fd3ff',y:'#ffe066',p:'#ff9ecb',g:'#5fbf6a'};
+const fl=[[0,6,0,'b'],[-3.5,4,1.5,'p'],[3.5,4,-1.5,'y'],[-2,2.5,-3.5,'y'],[2.5,2.5,3.5,'b'],[-5.5,1.5,-1,'b'],[5.5,1.5,1,'p'],[0,1,4.5,'p'],[0,.5,-4.5,'b'],[-4,-.5,3.5,'y'],[4,-.5,-3.5,'p']];
+const base=[0,-9,0],pts=[];
+const norm=v=>{const l=Math.hypot(...v)||1;return v.map(a=>a/l)};
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+fl.forEach(([cx,cy,cz,k])=>{
+  for(let t=0;t<1;t+=.025)pts.push([cx*t,base[1]+(cy-base[1])*t,cz*t,'|','g']);
+  const n=norm([cx,cy+3,cz]);let u=cross(n,[0,1,0]);u=Math.hypot(...u)<.1?[1,0,0]:norm(u);const v=cross(n,u);
+  const mid=k==='y'?'p':'y';
+  [[.9,8,'o'],[1.7,14,'*'],[2.3,18,'.']].forEach(([r,m,ch])=>{
+    for(let i=0;i<m;i++){const a=i/m*6.283+r,c=Math.cos(a)*r,s=Math.sin(a)*r;
+      pts.push([cx+u[0]*c+v[0]*s,cy+u[1]*c+v[1]*s,cz+u[2]*c+v[2]*s,ch,k]);}
+  });
+  pts.push([cx+n[0]*.3,cy+n[1]*.3,cz+n[2]*.3,'@',mid]);
+});
+for(let i=0;i<24;i++){const a=i/24*6.283;pts.push([Math.cos(a)*1.4,-6.5,Math.sin(a)*1.4,'=','p']);}
+let ang=0;
+function frame(){
+  const ch=new Array(W*H).fill(' '),co=new Array(W*H).fill(''),zb=new Array(W*H).fill(-1e9);
+  const ca=Math.cos(ang),sa=Math.sin(ang);
+  for(const [px,py,pz,c,k] of pts){
+    const rx=px*ca+pz*sa,rz=-px*sa+pz*ca;
+    const col=Math.round(W/2+rx*2.7),row=Math.round(H/2-(py+1.5)*1.15);
+    if(col<0||col>=W||row<0||row>=H)continue;
+    const i=row*W+col;if(rz>zb[i]){zb[i]=rz;ch[i]=c;co[i]=COL[k];}
+  }
+  let out='';
+  for(let r=0;r<H;r++){let run='',cur=null;
+    for(let c=0;c<W;c++){const i=r*W+c,k=co[i]||'';
+      if(k!==cur){if(run)out+=cur?`<span style="color:${cur}">${run}</span>`:run;run='';cur=k;}
+      run+=ch[i];}
+    out+=(cur?`<span style="color:${cur}">${run}</span>`:run)+'\n';}
+  F.innerHTML=out;ang+=.03;requestAnimationFrame(frame);
+}
+
+(async()=>{
+  await sleep(1200);
+  await type('good morning my love jack from lakeview!');
+  await sleep(900);await type('\n\nit is currently: '+now());
+  await sleep(900);await type('\n\nI wanted to give you this');
+  await sleep(1800);await wipe();await sleep(700);
+  T.style.display='none';F.classList.add('on');frame();
+})();
+</script>
+</body>
+</html>
